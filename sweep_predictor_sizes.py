@@ -33,7 +33,7 @@ def calculate_CPI(benchmark, L1D_SIZE="128kB", L1I_SIZE="128kB", L2_SIZE="1MB", 
         if "system.cpu.commitStats0.numInsts " in line:
             numInsts = re.findall(pattern, line)[0]
         if "system.cpu.dcache.overallMisses::total" in line:
-            print("found dcahce misses")
+            #print("found dcahce misses")
             dcacheMisses = re.findall(pattern, line)[0]
         if "system.cpu.icache.overallMisses::total" in line:
             icacheMisses = re.findall(pattern, line)[0]
@@ -47,18 +47,20 @@ def calculate_CPI(benchmark, L1D_SIZE="128kB", L1I_SIZE="128kB", L2_SIZE="1MB", 
     print("icacheMisses", icacheMisses)
     print("l2Misses", l2Misses)
     print("numInsts", numInsts)
-    print(((int(dcacheMisses) + int(icacheMisses))*10 + int(l2Misses)*80)/int(numInsts))
+    #print(((int(dcacheMisses) + int(icacheMisses))*10 + int(l2Misses)*80)/int(numInsts))
     CPI = 1+((int(dcacheMisses) + int(icacheMisses))*10 + int(l2Misses)*80)/int(numInsts)
+    print(CPI)
         
     return CPI, BTBMissPct, BranchMispredPercent
 
 
 
-line_numbers = {
-    "localPredictorSize":192,
-    "globalPredictorSize":193,
-    "localHistoryTableSize":194
-}
+#line_numbers = {
+#    "localPredictorSize":192,
+#    "globalPredictorSize":193,
+#    "localHistoryTableSize":194
+#}
+
 
 def run_benchmarks(attribute, size,output_file):
     filename = "/home/casp26p1/gem5/src/cpu/o3/BaseO3CPU.py"
@@ -69,7 +71,13 @@ def run_benchmarks(attribute, size,output_file):
     for i, line in enumerate(lines):
         if attribute in line:
             lines[i] = f"        {attribute}={size},\n"
-            break
+            #break
+        elif "localPredictorSize" in line:
+            lines[i] = f"        localPredictorSize=2048,\n"
+        elif "globalPredictorSize" in line:
+            lines[i] = f"        globalPredictorSize=8192,\n"
+        elif "choicePredictorSize" in line:
+            lines[i] = f"        choicePredictorSize=8192,\n"
 
     # Write the modified contents back
     with open(filename, "w") as f:
@@ -79,7 +87,7 @@ def run_benchmarks(attribute, size,output_file):
     gem5_dir = "/home/casp26p1/gem5/"
 
     subprocess.run(
-    ["scons", "build/X86/gem5.opt"],
+    ["scons", "build/X86/gem5.opt", "-j4"],
     cwd=gem5_dir,
     input=b"y\n",
     check=True
@@ -107,22 +115,22 @@ def run_benchmarks(attribute, size,output_file):
 
 
 
-#sweeping for local predictor size
-sizes = [128, 256, 512, 1024, 2048, 4096]
-sizes = [128]
+"""
+sizes = [512, 1024]
 for size in sizes:
-    run_benchmarks( "localPredictorSize", size, "localPredictroSize_sweep.txt")
+    run_benchmarks( "localPredictorSize", size, "localPredictorSize_sweep.txt")
+"""
+    
+    
+sizes = [2048, 4096]
+for size in sizes:
+    run_benchmarks( "globalPredictorSize", size, "globalPredictorSize_sweep.txt")
+    
     
 """    
-sizes = [1024, 2048, 4096, 8192, 16384]
+sizes = [2048, 4096]
 for size in sizes:
-    run_benchmarks( "globalPredictorSize", size, "globalPredictroSize_sweep.txt")
-    
-    
-    
-sizes = [64, 128, 256, 512, 1024]
-for size in sizes:
-    run_benchmarks("localHistoryTableSize", size,  "localHistoryTableSize_sweep.txt")
+    run_benchmarks("choicePredictorSize", size,  "choicePredictorSize_sweep.txt")
 """   
 
         
