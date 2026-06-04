@@ -14,11 +14,11 @@ def calculate_CPI(benchmark, L1D_SIZE="128kB", L1I_SIZE="128kB", L2_SIZE="1MB", 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     script_path = os.path.join(base_dir, "runGem5_param.sh")
     subprocess.run([script_path, benchmark, L1D_SIZE, L1I_SIZE, L2_SIZE, L1D_ASSOC, L1I_ASSOC, L2_ASSOC, CACHE_LINE, MAX_INST, CPU_TYPE ])
-    stats = { '401.bzip2' : "401.bzip2/m5out/stats.txt",
-              '429.mcf': "429.mcf/m5out/stats.txt",
-              '456.hmmer': "456.hmmer/m5out/stats.txt",
-              '458.sjeng': "458.sjeng/m5out/stats.txt" ,
-              '470.lbm': "470.lbm/m5out/stats.txt" , 
+    stats = { '401.bzip2' : "/home/casp26p1/Downloads/Project1_SPEC-master/401.bzip2/m5out/stats.txt",
+              '429.mcf': "/home/casp26p1/Downloads/Project1_SPEC-master/429.mcf/m5out/stats.txt",
+              '456.hmmer': "/home/casp26p1/Downloads/Project1_SPEC-master/456.hmmer/m5out/stats.txt",
+              '458.sjeng': "/home/casp26p1/Downloads/Project1_SPEC-master/458.sjeng/m5out/stats.txt" ,
+              '470.lbm': "/home/casp26p1/Downloads/Project1_SPEC-master/470.lbm/m5out/stats.txt" , 
     }
     file = open(stats[benchmark], "r")
     lines = file.readlines()
@@ -104,14 +104,18 @@ def run_benchmarks(attribute, size,output_file):
         result.append(branchMisPredPct)
         sweep_results.append(result)
         
+        with open(output_file, "a") as file:
+            file.write(",".join(map(str, result)) + "\n")
+        
+        
     print(f"size {size} results for attribute {attribute}")
     print(sweep_results)
 
-    import os 
+    #import os 
 
-    with open(output_file, "a") as file:
-        for row in sweep_results:
-            file.write(",".join(map(str, row)) + "\n")
+    #with open(output_file, "a") as file:
+    #    for row in sweep_results:
+    #        file.write(",".join(map(str, row)) + "\n")
 
 
 
@@ -119,18 +123,23 @@ def run_benchmarks(attribute, size,output_file):
 sizes = [512, 1024]
 for size in sizes:
     run_benchmarks( "localPredictorSize", size, "localPredictorSize_sweep.txt")
-"""
+
     
     
 sizes = [2048, 4096]
 for size in sizes:
     run_benchmarks( "globalPredictorSize", size, "globalPredictorSize_sweep.txt")
+   
     
-    
-"""    
 sizes = [2048, 4096]
 for size in sizes:
     run_benchmarks("choicePredictorSize", size,  "choicePredictorSize_sweep.txt")
 """   
 
-        
+sizes = [2048, 4096]
+for size in sizes:
+    run_benchmarks("choicePredictorSize", size,  "choicePredictorSize_sweep.txt")
+    
+sizes = [512, 1024]
+for size in sizes:
+    run_benchmarks( "localPredictorSize", size, "localPredictorSize_sweep.txt")
